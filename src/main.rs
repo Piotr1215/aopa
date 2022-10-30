@@ -1,30 +1,39 @@
-use std::{io, process::exit};
+use std::io::{self, Seek};
+
+use serde_yaml::Value;
 
 fn main() -> io::Result<()> {
-    let home = env!("HOME");
-    dbg!(home);
+    let mut file = std::fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open("sample_file.yaml")
+        .expect("File should exist");
 
-    if home.is_empty() {
-        eprintln!("Variable HOME is not defined, please define");
-        exit(1);
-    }
+    let mut value: Value = serde_yaml::from_reader(&file).unwrap();
 
-    let file = std::fs::File::options()
-        .open("/home/decoder/dev/rust/aopa/costam.yml")
-        .unwrap();
+    let pa = serde_yaml::to_string(&value["window"]["opacity"]).unwrap();
 
-    let mut value: serde_yaml::Value = serde_yaml::from_reader(&file).unwrap();
+    let aka = pa.trim().to_string();
 
-    let opacity = &value.get("window").unwrap().get("opacity");
-    dbg!(opacity);
+    println!("{:?}", &aka);
 
-    if serde_yaml::to_string(opacity).unwrap() == "0.9" {
-        *value.get_mut("window").unwrap().get_mut("opacity").unwrap() = "1.0".into();
-    } else {
-        *value.get_mut("window").unwrap().get_mut("opacity").unwrap() = "0.9".into();
-    }
+    let toggle_match = matcher(aka);
 
-    serde_yaml::to_writer(file, &value).unwrap();
+    println!("This is after toggle match call {:?}", toggle_match);
+
+    value["window"]["opacity"] = toggle_match.into();
+
+    file.rewind().unwrap();
+
+    serde_yaml::to_writer(&file, &value).unwrap();
 
     Ok(())
+}
+fn matcher(x: String) -> String {
+    println!("{:?}", x.trim().to_string());
+    match x.trim() {
+        "'1.0'" => String::from("'0.9'"),
+        "'0.9'" => String::from("'1.0'"),
+        _ => String::from("'1.0'"),
+    }
 }
