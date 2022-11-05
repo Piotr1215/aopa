@@ -9,10 +9,12 @@ fn main() {
         print!("yq or sed are not present in the system, exiting");
         process::exit(1)
     }
-    let _home = env::var("HOME").unwrap_or_else(|_| "/home/decoder/".to_owned());
+    let home = env::var("HOME").unwrap();
 
-    // let alacritty_config = Path::new(&home).join(".config/alacritty/alacritty.yml");
-    let alacritty_config = Path::new("/home/decoder/dev/rust/aopa/costam.yml");
+    let alacritty_config = Path::new(&home)
+        .join(".config/alacritty/alacritty.yml")
+        .display()
+        .to_string();
 
     let output = Command::new("/usr/bin/yq")
         .arg("eval")
@@ -23,23 +25,18 @@ fn main() {
 
     let current_opacity = String::from_utf8_lossy(&output.stdout);
 
-    println!("Current opacity {}", current_opacity);
+    let mut new_opacity = String::from("1.0");
 
-    if current_opacity == "0.9" {
-        println!("Current opacity {}", current_opacity);
-        Command::new("/usr/bin/sed")
-            .arg("-i")
-            .arg("s#  opacity: \\(.*\\)#  opacity: 0.9#")
-            .arg("costam.yml")
-            .spawn()
-            .expect("failed to execute process");
-    } else {
-        println!("Current opacity {}", current_opacity);
-        Command::new("/usr/bin/sed")
-            .arg("-i")
-            .arg("s#  opacity: \\(.*\\)#  opacity: 1.0#")
-            .arg("costam.yml")
-            .spawn()
-            .expect("failed to execute process");
+    if current_opacity.trim() == new_opacity.trim() {
+        new_opacity = String::from("0.9");
     }
+
+    let sub: String = format!("s#  opacity: \\(.*\\)#  opacity: {}#", new_opacity.trim());
+
+    Command::new("/usr/bin/sed")
+        .arg("-i")
+        .arg(sub)
+        .arg(alacritty_config)
+        .spawn()
+        .expect("failed to execute process");
 }
