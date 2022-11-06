@@ -8,4 +8,4 @@ A simple CLI to change [Alacritty](https://alacritty.org/) opacity from `1.0` â†
 
 A few `todos` after feedback from `r/rust`
 
-- [ ] replace `sed` with the `regex crate`
+- [x] replace `sed` with the `regex crate`
