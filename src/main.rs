@@ -17,7 +17,7 @@ fn main() {
         print!("yq or sed are not present in the system, exiting");
         process::exit(1)
     }
-    // let home = env::var("HOME").unwrap();
+
     #[allow(deprecated)]
     let home = env::home_dir().unwrap();
 
@@ -34,7 +34,6 @@ fn main() {
         .expect("failed to execute process");
 
     let current_opacity = String::from_utf8_lossy(&output.stdout);
-    print!("{}", current_opacity);
 
     let new_opacity = if current_opacity.trim() == NO_OPACITY {
         SMALL_OPACITY
@@ -50,4 +49,6 @@ fn main() {
         .arg(alacritty_config)
         .spawn()
         .expect("failed to execute process");
+
+    println!("Swapped to new opacity value: {}", new_opacity);
 }
