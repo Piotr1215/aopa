@@ -4,7 +4,6 @@ use std::{
     fs::File,
     io::{prelude::*, BufReader},
     path::Path,
-    process,
 };
 
 const NO_OPACITY: &str = "1.0";
@@ -12,11 +11,6 @@ const SMALL_OPACITY: &str = "0.9";
 const ALACRITY_PATH: &str = ".config/alacritty/alacritty.yml";
 
 fn main() -> std::io::Result<()> {
-    if cfg!(target_os = "windows") {
-        println!("This will not work on windows, get Linux instead!");
-        process::exit(1)
-    }
-
     #[allow(deprecated)]
     let home = env::home_dir().unwrap();
 
