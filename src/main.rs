@@ -4,12 +4,22 @@ use std::{
     process::{self, Command},
 };
 
+const NO_OPACITY: &str = "1.0";
+const SMALL_OPACITY: &str = "0.9";
+
 fn main() {
-    if !Path::new("/usr/local/bin/yq").exists() || !Path::new("/usr/bin/sed").exists() {
+    if cfg!(target_os = "windows") {
+        println!("This will not work on windows, get Linux instead!");
+        process::exit(1)
+    }
+
+    if !Path::new("/usr/bin/yq").exists() || !Path::new("/usr/bin/sed").exists() {
         print!("yq or sed are not present in the system, exiting");
         process::exit(1)
     }
-    let home = env::var("HOME").unwrap();
+    // let home = env::var("HOME").unwrap();
+    #[allow(deprecated)]
+    let home = env::home_dir().unwrap();
 
     let alacritty_config = Path::new(&home)
         .join(".config/alacritty/alacritty.yml")
@@ -24,14 +34,15 @@ fn main() {
         .expect("failed to execute process");
 
     let current_opacity = String::from_utf8_lossy(&output.stdout);
+    print!("{}", current_opacity);
 
-    let mut new_opacity = String::from("1.0");
+    let new_opacity = if current_opacity.trim() == NO_OPACITY {
+        SMALL_OPACITY
+    } else {
+        NO_OPACITY
+    };
 
-    if current_opacity.trim() == new_opacity.trim() {
-        new_opacity = String::from("0.9");
-    }
-
-    let sub: String = format!("s#  opacity: \\(.*\\)#  opacity: {}#", new_opacity.trim());
+    let sub: String = format!(r#"s#  opacity: \(.*\)#  opacity: {}#"#, new_opacity);
 
     Command::new("/usr/bin/sed")
         .arg("-i")
